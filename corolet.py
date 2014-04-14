@@ -44,6 +44,11 @@ def corolet(func):
 
     return wrapper
 
+def in_corolet():
+    """Check if currently within a corolet."""
+    glet = greenlet.getcurrent()
+    return isinstance(glet, CoroletGreenlet)
+
 def yield_from(future):
     """Use instead of `yield from` while within a corolet."""
     glet = greenlet.getcurrent()
