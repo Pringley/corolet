@@ -1,6 +1,10 @@
 import asyncio
 import functools
+import warnings
 import greenlet
+
+class CoroletGreenlet(greenlet.greenlet):
+    """Subclass of greenlet used by corolets."""
 
 class CoroletError(RuntimeError):
     """Error while running corolet."""
@@ -19,7 +23,7 @@ def corolet(func):
     def wrapper(*args, **kwargs):
 
         # Create a greenlet to keep track of the function's context.
-        glet = greenlet.greenlet(func)
+        glet = CoroletGreenlet(func)
 
         # Run the function until it switches back out.
         glet_result = glet.switch(*args, **kwargs)
@@ -43,6 +47,12 @@ def corolet(func):
 def yield_from(future):
     """Use instead of `yield from` while within a corolet."""
     glet = greenlet.getcurrent()
+    if not isinstance(glet, CoroletGreenlet):
+        warnings.warn("yield_from should only be used within a real corolet",
+                      RuntimeWarning, stacklevel=2)
+    parent = glet.parent
+    if parent is None:
+        raise CoroletError("cannot yield_from outside a corolet or greenlet")
     call = YieldFromRequest(future)
     result = glet.parent.switch(call)
     return result
