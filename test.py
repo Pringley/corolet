@@ -22,8 +22,10 @@ def subcoro(num):
 
 def subfunc_sleep(time):
     print('[subfunc_sleep] sleeping for', time)
-    corolet.yield_from(asyncio.sleep(time))
+    corolet.yield_from_or_block(asyncio.sleep(time))
     print('[subfunc_sleep] done sleeping')
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
+
+subfunc_sleep(.5)

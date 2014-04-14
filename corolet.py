@@ -61,3 +61,13 @@ def yield_from(future):
     call = YieldFromRequest(future)
     result = glet.parent.switch(call)
     return result
+
+def yield_from_or_block(future):
+    """Within a corolet, uses `yield_from`. Otherwise, use blocking call."""
+    if in_corolet():
+        return yield_from(future)
+    if asyncio.iscoroutine(future):
+        future = asyncio.Task(future)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(future)
+    return future.result()
